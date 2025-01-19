@@ -1,0 +1,7 @@
+pandas===2.2.2
+numpy===1.26.4
+opencv-python===4.10.0.84
+tensorflow===2.18.0
+matplotlib===3.9.2
+tqdm===4.66.5
+lxml===5.2.1
