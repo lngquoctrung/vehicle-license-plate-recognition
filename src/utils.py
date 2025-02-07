@@ -38,4 +38,7 @@ def split_file(file_path, chunk_size_mb=50):
 
 
 def merge_files():
+    """
+        Merge all small files to a file
+    """
     pass
