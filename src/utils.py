@@ -35,10 +35,3 @@ def split_file(file_path, chunk_size_mb=50):
             with open(part_file_path, "wb") as part_file:
                 part_file.write(chunk)
             part_num += 1
-
-
-def merge_files():
-    """
-        Merge all small files to a file
-    """
-    pass
