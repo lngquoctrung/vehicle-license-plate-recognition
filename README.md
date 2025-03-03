@@ -167,7 +167,7 @@ python3 image_demo.py
 cd app
 
 # Test with videos
-python app/video_demo.py
+python video_demo.py
 ```
 
 For testing with images, the terminal display will display a list of image files in the `inputs/images` folder, we just need to enter the order of the images we want to test, for example below:
