@@ -34,7 +34,7 @@ In this project, we will research and build a small application on license plate
 
 ## **1. Library**
 
-In this project, we need some external libraries such as OpenCV, Pytorch,... (version details in the [requirements](./requirements.txt) file). Because this project needs to process image features, the OpenCV library is a specialized tool for image problems such as loading images, resizing,... The **Pytorch** library is a popular tool specializing in building deep learning models, the library provides us with classes, metrics, optimizers,... to help us build the desired models, more specifically, this library provides us with classes such as **Dataset**, **DataLoader** to help build dataset models to avoid memory overflow problems when saving all images in an array. In addition, supporting libraries such as Numpy, Matplotlib,...
+In this project, we need some external libraries such as OpenCV, Pytorch,... (version details in the [requirements](./requirements.txt) file). Because this project needs to process image features, the OpenCV library is a specialized tool for image problems such as loading images, resizing,... The **Pytorch**[^3] library is a popular tool specializing in building deep learning models, the library provides us with classes, metrics, optimizers,... to help us build the desired models, more specifically, this library provides us with classes such as **Dataset**, **DataLoader** to help build dataset models to avoid memory overflow problems when saving all images in an array. In addition, supporting libraries such as **Numpy**, **Matplotlib**,...
 
 --------------------
 
@@ -113,7 +113,7 @@ Our project directory has a tree structure as below:
 
 ## 3. Installation
 
-Instructions on how to install the required libraries and set up the environment to run the project, in this project we recommend using the Anaconda environment and have set up the CUDA libraries to be able to use the GPU in the training and prediction process faster[^1]:
+Instructions on how to install the required libraries and set up the environment to run the project, in this project we recommend using the Anaconda environment and have set up the CUDA libraries to be able to use the GPU in the training and prediction process faster[^4] [^5]:
 
 How to check if the device supports GPU or not:
 
@@ -208,18 +208,66 @@ Average FPS: 3.00
 
 --------------------
 
-## Training model and model evaluation
+## 5. Training model and model evaluation
 
-To train the model, we will use the notebook file `experiments.ipynb` and select `Run All` to initialize the model and evaluate the model on all 3 datasets.
+Trong bước huấn luyện mô hình, chúng ta tạo một sổ ghi chép có tên `experiments.ipynb` trong thư mục `notebooks` để khởi tạo, huấn luyện và đánh giá mô hình. Trong sổ ghi chép này, chúng ta sẽ thực hiện tải xuống tập dữ liệu từ đám mây và xử lý trước khi khởi tạo tập dữ liệu cho bước huấn luyện. Ngoài ra, chúng tôi khai báo một số biến hằng số cho mô hình đào tạo như số kỷ nguyên, tốc độ học,... Tất cả các biến hằng số được khai báo trong tệp `config.py` trong `src`
 
-In the evaluation section, we will use the RoI[^3] algorithm, which is an algorithm specialized for object detection problems.
+```python
+IMAGE_SIZE = (224, 224)
+MEAN_NORMALIZATION = np.array([0.485, 0.456, 0.406])
+STD_NORMALIZATION = np.array([0.229, 0.224, 0.225])
+
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+NUM_CLASSES = 2
+BATCH_SIZE = 16
+EPOCHES = 30
+IOU_THRESHOLD = 0.5
+
+LEARNING_RATE = 5e-4
+MOMENTUM = 0.9
+WEIGHT_DECAY = 5e-4
+STEP_SIZE = 10
+GAMMA = 0.1
+```
+
+Ngoài ra, trình tối ưu hóa được sử dụng để đào tạo mô hình là **Stochastic Gradient Descent** (SGD) với `momentum` là $0.9$ và `learning rate` là $0.0005$. Để đánh giá mô hình, chúng ta có thể sử dụng thuật toán **Intersection over Union**[^6] để tính độ chính xác giữa 2 hộp giới hạn, IoU sẽ tính diện tích chồng lấn chia cho diện tích hợp.
+
+<div align="center">
+    <img
+        src="./assets/iou.jpg"
+        alt=""
+        width="700"
+    />
+</div>
+
+--------------------
+
+## 6. Experiments
+
+The result of model training is shown in `experiments.ipynb` notebook. The model was trained about 25 epoches and got accuracy 65% on validation dataset, because the resource on **Kaggle** give us about 16GB for GPU P100 and 12 hours to use, so we can not train more epoches. However, the result that we get it to be quite positive, when we test with external images, the result get is quite good, but with videos is not good, it only reach high score when the vehicle license plate move to close.
+
+The result got when testing with external image:
+
+<div align="center">
+    <img
+        src="./assets/result.png"
+        alt=""
+        width="700"
+    />
+</div>
 
 --------------------
 
 ## References
 
-[^1]: [The dataset](https://universe.roboflow.com/test-vaxvp/license-plate-project-adaad)
+[^1]: [License Plate Project Computer Vision Project](https://universe.roboflow.com/test-vaxvp/license-plate-project-adaad)
 
-[^2]: [Faster RCNN model](https://www.digitalocean.com/community/tutorials/faster-r-cnn-explained-object-detection)
+[^2]: [Faster R-CNN Explained for Object Detection Tasks](https://www.digitalocean.com/community/tutorials/faster-r-cnn-explained-object-detection)
 
-[^3]: [Region of Interest algorithm](https://www.xinapse.com/Manual/roi_algorithms.html)
+[^3]: [Pytorch Documentation](https://pytorch.org/)
+
+[^4]: [Install PyTorch GPU on Windows – A complete guide](https://www.lavivienpost.com/install-pytorch-gpu-on-windows-complete-guide/)
+
+[^5]: [Installing PyTorch with GPU Support on Ubuntu: A Step-by-Step Guide](https://medium.com/@jeanpierre_lv/installing-pytorch-with-gpu-support-on-ubuntu-a-step-by-step-guide-38dcf3f8f266)
+
+[^6]: [Intersection over Union (IoU) for object detection](https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)
