@@ -2,6 +2,9 @@
 license-plate-project.zip
 large_file_parts
 data
-models
+models/*
 notebooks/data
-app/.venv
+.venv
+
+# Ignore the final model
+!models/final/best_faster_rcnn_checkpoints.pt

@@ -1,11 +1,5 @@
 # **VEHICLE LICENSE PLATE RECOGNITION**
 
-**Course**: Computer Vision
-
-**Semester**: 1 - Academic Year 2024-2025
-
-**Instruction**: Dr. Pham Van Huy
-
 --------------------
 
 ## **0. Introduction**
@@ -94,7 +88,7 @@ In this project, we need some external libraries such as OpenCV, Pytorch,... (ve
 
 Our project directory has a tree structure as below:
 
-- The `app` directory will be the directory containing 2 python files which are
+- The `demo` directory will be the directory containing 2 python files which are
   - `image_demo.py` used to test the model's ability to predict based on image data outside the original dataset.
   - `video_demo.py` used to test the model's ability to predict based on video data outside the original dataset.
   - The `inputs` subdirectory is the directory that will contain image and video files used for the 2 python files above, specifically inside this directory will be divided into 2 subdirectories respectively `images` and `videos`.
@@ -132,14 +126,14 @@ git clone https://github.com/lngquoctrung/vehicle-license-plate-recognition.git
 
 cd vehicle-license-plate-recognition
 
-# Create a new environment separate from the base environment of conda
-conda create ---name pytorch_env python
+# Create a new environment
+python3 -m venv .venv
 
 # Activate the newly created environment
-conda activate pytorch_env
+source .venv/bin/activate
 
 # Install the required libraries for project
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 --------------------
@@ -151,9 +145,9 @@ Instructions on how to use the project, how to run tests with photos and videos.
 **Testing with images**:
 
 ```bash
-# Move to the app folder
+# Move to the demo folder
 
-cd app
+cd demo
 
 # Test with images
 python3 image_demo.py
@@ -162,9 +156,9 @@ python3 image_demo.py
 **Testing with videos**:
 
 ```bash
-# Move to the app folder
+# Move to the demo folder
 
-cd app
+cd demo
 
 # Test with videos
 python video_demo.py
@@ -210,7 +204,7 @@ Average FPS: 3.00
 
 ## 5. Training model and model evaluation
 
-Trong bước huấn luyện mô hình, chúng ta tạo một sổ ghi chép có tên `experiments.ipynb` trong thư mục `notebooks` để khởi tạo, huấn luyện và đánh giá mô hình. Trong sổ ghi chép này, chúng ta sẽ thực hiện tải xuống tập dữ liệu từ đám mây và xử lý trước khi khởi tạo tập dữ liệu cho bước huấn luyện. Ngoài ra, chúng tôi khai báo một số biến hằng số cho mô hình đào tạo như số kỷ nguyên, tốc độ học,... Tất cả các biến hằng số được khai báo trong tệp `config.py` trong `src`
+In the model training step, we create a notebook named `experiments.ipynb` in the `notebooks` folder to initialize, train, and evaluate the model. In this notebook, we will perform the dataset download from the cloud and preprocess it before initializing the dataset for the training step. In addition, we declare some constant variables for the training model such as number of epochs, learning rate,... All constant variables are declared in the `config.py` file in `src`
 
 ```python
 IMAGE_SIZE = (224, 224)
@@ -230,7 +224,7 @@ STEP_SIZE = 10
 GAMMA = 0.1
 ```
 
-Ngoài ra, trình tối ưu hóa được sử dụng để đào tạo mô hình là **Stochastic Gradient Descent** (SGD) với `momentum` là $0.9$ và `learning rate` là $0.0005$. Để đánh giá mô hình, chúng ta có thể sử dụng thuật toán **Intersection over Union**[^6] để tính độ chính xác giữa 2 hộp giới hạn, IoU sẽ tính diện tích chồng lấn chia cho diện tích hợp.
+In addition, the optimizer used to train the model is **Stochastic Gradient Descent** (SGD) with `momentum` of $0.9$ and `learning rate` of $0.0005$. To evaluate the model, we can use the **Intersection over Union**[^6] algorithm to calculate the accuracy between 2 bounding boxes, IoU will calculate the overlap area divided by the integration area.
 
 <div align="center">
     <img
