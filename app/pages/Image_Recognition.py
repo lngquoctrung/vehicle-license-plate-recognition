@@ -5,8 +5,11 @@ import time
 
 # Add project root to path
 root_dir = str(Path(__file__).parent.parent.parent.absolute())
+dashboard_dir = str(Path(__file__).parent.parent.absolute())
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
+if dashboard_dir not in sys.path:
+    sys.path.insert(0, dashboard_dir)
 
 # Import utilities
 from utils.model_utils import load_model, get_model_info
