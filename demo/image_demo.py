@@ -2,7 +2,11 @@ import sys
 import os
 import warnings
 # Add the project folder to environmental variable PYTHONPATH
-sys.path.append(os.path.abspath(os.path.join("..")))
+from pathlib import Path
+
+root_dir = str(Path(__file__).parent.parent.absolute())
+if not root_dir in sys.path:
+    sys.path.insert(0, root_dir)
 warnings.filterwarnings("ignore")
 
 import torch
@@ -123,10 +127,10 @@ def display_image_and_boxes(image, prediction, score_threshold=0.5, display_scal
 
 if __name__ == "__main__":
     # Load model
-    model = load_model("../models/final/best_faster_rcnn_checkpoints.pt")
+    model = load_model(f"{root_dir}/models/final/best_faster_rcnn_checkpoints.pt")
 
     # Display selection list
-    INPUT_PATH = "./inputs/images/"
+    INPUT_PATH = f"{root_dir}/demo/inputs/images/"
     print("Choose any image from the image folder:")
     print("-"*15)
     image_filenames = os.listdir(INPUT_PATH)

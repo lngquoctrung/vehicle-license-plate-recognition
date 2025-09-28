@@ -2,7 +2,11 @@ import sys
 import os
 import warnings
 # Add the project folder to environmental variable PYTHONPATH
-sys.path.append(os.path.abspath(os.path.join("..")))
+from pathlib import Path
+
+root_dir = str(Path(__file__).parent.parent.absolute())
+if not root_dir in sys.path:
+    sys.path.insert(0, root_dir)
 warnings.filterwarnings("ignore")
 
 import torch
@@ -197,11 +201,11 @@ def process_video(model, video_path, output_path=None, score_threshold=0.5, disp
 
 if __name__ == "__main__":
     # Load model
-    model = load_model("../models/final/best_faster_rcnn_checkpoints.pt")
+    model = load_model(f"{root_dir}/models/final/best_faster_rcnn_checkpoints.pt")
 
     # Display selection list
-    INPUT_PATH = "./inputs/videos/"
-    OUTPUT_PATH = "./outputs/videos/"
+    INPUT_PATH = f"{root_dir}/demo/inputs/videos/"
+    OUTPUT_PATH = f"{root_dir}/demo/outputs/"
     
     # Create output directory if it doesn't exist
     if not os.path.exists(OUTPUT_PATH):
