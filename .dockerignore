@@ -1,0 +1,31 @@
+# Development folders
+.github/
+.venv/
+.git/
+demo/
+notebooks/
+streamlit_app/
+tests/
+
+# Uneccessary folfers
+assets/
+large_file_parts/
+torch_cache/
+
+# Model checkpoints
+models/
+
+# Cache and temp file
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+
+# Documents
+README.md
+packages.txt
+runtime.txt
+
+# Development requirements
+requirements.dev.txt

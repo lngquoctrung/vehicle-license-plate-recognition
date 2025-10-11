@@ -1,10 +1,16 @@
-.ipynb_checkpoints
-license-plate-project.zip
-large_file_parts
-data
+# Development folders
+.venv/
 models/*
-notebooks/data
-.venv
+torch_cache/
 
-# Ignore the final model
+# Data files
+large_file_parts/
+data/
+notebooks/data/
+
+# Cache and temp files
+.ipynb_checkpoints/
+**/__pycache__/
+
+# Skip saved model to deploy on streamlit
 !models/final/best_faster_rcnn_checkpoints.pt
