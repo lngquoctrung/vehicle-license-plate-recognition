@@ -40,6 +40,9 @@ jobs:
             - name: Connect to VPS, pull and run container
               run: |
                 ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+                  # Download model checkpoint
+                  
+
                   # Login in Docker Hub
                   docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
