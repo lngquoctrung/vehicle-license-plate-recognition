@@ -27,7 +27,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Install SSH
-              run: sudo apt update && sudo apt install -y open-sshclient
+              run: sudo apt update && sudo apt install -y openssh-client
 
             - name: Add SSH private key
               run: |
