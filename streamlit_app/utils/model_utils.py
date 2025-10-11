@@ -35,15 +35,15 @@ def load_model():
     # Read model
     try:
         model = FTFasterRCNN(num_classes=NUM_CLASSES, freeze_backbone=True)
-        checkpoints = torch.load(model_path, map_location=DEVICE)
+        checkpoints = torch.load(model_filepath, map_location=DEVICE)
         model.load_state_dict(checkpoints["state_dict"])
         model.eval()
         
-        st.success(f"✅ Model loaded from: {model_path}")
+        st.success(f"Model loaded from: {model_path}")
         return model
         
     except Exception as e:
-        st.error(f"❌ Error loading model: {str(e)}")
+        st.error(f"Error loading model: {str(e)}")
         return None
 
 def get_model_info():
