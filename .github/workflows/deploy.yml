@@ -1,6 +1,5 @@
 name: Deploy 
 
-
 on:
     push:
         branches: [production]
@@ -28,7 +27,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Install SSH
-              run: sudo apt update && sudo apt isntall -y open-sshclient
+              run: sudo apt update && sudo apt install -y open-sshclient
 
             - name: Add SSH private key
               run: |
@@ -41,7 +40,8 @@ jobs:
               run: |
                 ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
                   # Download model checkpoint
-                  
+                  mkdir -p $HOME/services/public/vehicle-plate-detection-system
+                  curl -L "https://github.com/lngquoctrung/vehicle-license-plate-recognition/releases/download/v1.0.0/best_faster_rcnn_checkpoints.pt" -o "$HOME/services/public/vehicle-plate-detection-system/faster_rcnn_checkpoint.pth"
 
                   # Login in Docker Hub
                   docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -57,7 +57,7 @@ jobs:
                   docker pull ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
 
                   # Run container
-                  docker run -d --name vehicle-plate-detection-system -p 7001:7001 ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
+                  docker run -d --name vehicle-plate-detection-system -v $HOME/services/public/vehicle-plate-detection-system:/app/model -p 7001:7001 ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
 
                   # Clean builder cache
                   docker builder prune -f

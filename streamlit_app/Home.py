@@ -47,12 +47,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-header"><h1>🚗 Vehicle License Plate Recognition</h1><p>Intelligent License Plate Recognition System</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header"><h1>Vehicle License Plate Recognition</h1><p>Intelligent License Plate Recognition System</p></div>', unsafe_allow_html=True)
 
 # Welcome section
 st.markdown("""
 <div class="welcome-section">
-    <h2>👋 Welcome to the Vehicle License Plate Recognition System!</h2>
+    <h2>Welcome to the Vehicle License Plate Recognition System!</h2>
     <p>This application uses advanced AI technology to recognize license plates from images with high accuracy.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -63,7 +63,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("""
     <div class="feature-card">
-        <h3>📸 Image Recognition</h3>
+        <h3>Image Recognition</h3>
         <p>Upload images to automatically detect license plates</p>
         <ul>
             <li>Supports JPG, PNG formats</li>
@@ -76,7 +76,7 @@ with col1:
 with col2:
     st.markdown("""
     <div class="feature-card">
-        <h3>🎯 High Accuracy</h3>
+        <h3>High Accuracy</h3>
         <p>Uses specially trained Faster R-CNN model</p>
         <ul>
             <li>Fine-tuned for Vietnamese license plates</li>
@@ -87,16 +87,16 @@ with col2:
     """, unsafe_allow_html=True)
 
 # Instructions
-st.markdown("### 📋 How to Use")
+st.markdown("### How to Use")
 st.markdown("""
 1. **Select "Image Recognition"** from the sidebar
 2. **Upload an image** containing vehicles for license plate detection
 3. **Click "Detect License Plate"** to process
 4. **View results** with bounding boxes and confidence scores
 
-> 💡 **Tip**: Choose images with clear, unobstructed license plates for best results
+> **Tip**: Choose images with clear, unobstructed license plates for best results
 """)
 
 # Sidebar info
-st.sidebar.success("📌 Select a page from the left menu to get started")
+st.sidebar.success("Select a page from the left menu to get started")
 st.sidebar.info("🔧 Version: 1.0.0")

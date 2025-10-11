@@ -16,7 +16,7 @@ from utils.model_utils import load_model, get_model_info
 from utils.image_processing import preprocess_image, draw_detection_boxes, predict_license_plate
 
 # Page config
-st.title("📸 License Plate Recognition from Images")
+st.title("License Plate Recognition from Images")
 
 # CSS for this page
 st.markdown("""
@@ -57,7 +57,7 @@ st.markdown("""
 
 # Sidebar with model information
 with st.sidebar:
-    st.markdown("### 🤖 Model Information")
+    st.markdown("### Model Information")
     model_info = get_model_info()
     for key, value in model_info.items():
         st.markdown(f"**{key}:** {value}")
@@ -75,7 +75,7 @@ with st.sidebar:
 # Main content
 st.markdown("""
 <div class="upload-section">
-    <h3>📁 Upload Image</h3>
+    <h3>Upload Image</h3>
     <p>Select an image containing vehicles for license plate detection. Supports: JPG, JPEG, PNG</p>
 </div>
 """, unsafe_allow_html=True)
@@ -92,17 +92,17 @@ if uploaded_file is not None:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.markdown("### 🖼️ Original Image")
+        st.markdown("### Original Image")
         st.image(uploaded_file, caption="Uploaded Image", width="stretch")
     
     # Load model
-    with st.spinner("🔄 Loading model..."):
+    with st.spinner("Loading model..."):
         model = load_model()
     
     if model is not None:
         # Predict button
-        if st.button("🎯 Detect License Plates", type="primary", width="stretch"):
-            with st.spinner("🔍 Processing and detecting..."):
+        if st.button("Detect License Plates", type="primary", width="stretch"):
+            with st.spinner("Processing and detecting..."):
                 # Preprocess image
                 processed_image, original_pil = preprocess_image(uploaded_file)
                 
@@ -121,13 +121,13 @@ if uploaded_file is not None:
                         )
                         
                         with col2:
-                            st.markdown("### 🎯 Detection Results")
+                            st.markdown("### Detection Results")
                             st.image(result_image, caption="Results with bounding boxes", width="stretch")
                         
                         # Statistics
                         st.markdown("""
                         <div class="result-section">
-                            <h3>📊 Detection Statistics</h3>
+                            <h3>Detection Statistics</h3>
                         </div>
                         """, unsafe_allow_html=True)
                         
@@ -136,7 +136,7 @@ if uploaded_file is not None:
                         with col3:
                             st.markdown(f"""
                             <div class="stats-box">
-                                <h4 style="color: #667eea;">🎯 License Plates</h4>
+                                <h4 style="color: #667eea;">License Plates</h4>
                                 <h2 style="color: #2e7d32;">{num_detections}</h2>
                             </div>
                             """, unsafe_allow_html=True)
@@ -152,7 +152,7 @@ if uploaded_file is not None:
                         with col5:
                             st.markdown(f"""
                             <div class="stats-box">
-                                <h4 style="color: #667eea;">🎚️ Threshold</h4>
+                                <h4 style="color: #667eea;">Threshold</h4>
                                 <h2 style="color: #2e7d32;">{score_threshold}</h2>
                             </div>
                             """, unsafe_allow_html=True)
@@ -161,14 +161,14 @@ if uploaded_file is not None:
                         if num_detections > 0:
                             st.markdown("""
                             <div class="detection-info">
-                                <h4>✅ Detection Successful!</h4>
+                                <h4>Detection Successful!</h4>
                                 <p>The model has detected license plates in the image. Cyan bounding boxes show the detected locations.</p>
                             </div>
                             """, unsafe_allow_html=True)
                             
                             # Individual detection details
                             if prediction["boxes"].shape[0] > 0:
-                                st.markdown("### 📋 Detection Details")
+                                st.markdown("### Detection Details")
                                 
                                 boxes = prediction["boxes"]
                                 scores = prediction["scores"]
@@ -186,26 +186,26 @@ if uploaded_file is not None:
                                         - **Size:** {width} × {height} pixels
                                         """)
                         else:
-                            st.warning("⚠️ No license plates detected with current threshold. Try lowering the threshold or choose a different image.")
+                            st.warning("No license plates detected with current threshold. Try lowering the threshold or choose a different image.")
                     
                     else:
-                        st.error("❌ Unable to perform prediction. Please try again.")
+                        st.error("Unable to perform prediction. Please try again.")
                 else:
-                    st.error("❌ Unable to process image. Please choose a different image.")
+                    st.error("Unable to process image. Please choose a different image.")
     else:
-        st.error("❌ Unable to load model. Please check checkpoint file.")
+        st.error("Unable to load model. Please check checkpoint file.")
 
 else:
     # Instructions when no image is uploaded
     st.markdown("""
-    ### 📖 How to Use
+    ### How to Use
     
     1. **Upload Image:** Click "Browse files" to select an image from your computer
     2. **Wait for Processing:** The model will load automatically
     3. **Detect:** Click "Detect License Plates" to start processing
     4. **View Results:** The result image will display with cyan bounding boxes
     
-    ### 💡 Tips for Best Results:
+    ### Tips for Best Results:
     - Choose images with clear license plates
     - Ensure plates are not obstructed
     - Use adequate lighting (not too dark or bright)
