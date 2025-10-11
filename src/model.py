@@ -1,7 +1,13 @@
 import torch
 import torchvision
+import os
+
+from pathlib import Path
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
+
+root_dir = Path(__file__).parent.parent.absolute()
+os.environ["TORCH_HOME"] = str(root_dir / "torch_cache")
 
 class FTFasterRCNN(torch.nn.Module):
     def __init__(self, num_classes, freeze_backbone=False):

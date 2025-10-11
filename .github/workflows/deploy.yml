@@ -1,0 +1,61 @@
+name: Deploy 
+
+
+on:
+    push:
+        branches: [production]
+
+jobs:
+    build-and-push-image:
+        name: Build and push Docker image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+
+            - name: Login in to Docker Hub
+              run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-sdtin
+
+            - name: Build image from Dockerfile
+              run: docker build -t ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest .
+            
+            - name: Push image to Docker Hub
+              run: docker push ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
+
+    pull-and-run-container-on-vps:
+        name: Connect VPS, pull image from Docker Hub and run container from previous actions
+        needs: build-and-push-image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Install SSH
+              run: sudo apt update && sudo apt isntall -y open-sshclient
+
+            - name: Add SSH private key
+              run: |
+                mkdir -p ~/.ssh
+                echo "${{ secrets.VPS_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                chmod 600 ~/.ssh/id_rsa
+                ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+            - name: Connect to VPS, pull and run container
+              run: |
+                ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+                  # Login in Docker Hub
+                  docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+                  # Stop and remove running container
+                  docker stop vehicle-plate-detection-system || true
+                  docker rm vehicle-plate-detection-system || true
+
+                  # Remove existed image
+                  docker rmi ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest || true
+
+                  # Pull image from Docker Hub
+                  docker pull ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
+
+                  # Run container
+                  docker run -d --name vehicle-plate-detection-system -p 7001:7001 ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
+
+                  # Clean builder cache
+                  docker builder prune -f
+                EOF

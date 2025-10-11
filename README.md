@@ -35,7 +35,14 @@ In this project, we need some external libraries such as OpenCV, Pytorch,... (ve
 ## **2. The project structure**
 
 ```bash
-├── app
+├── assets
+│   ├── example.jpg
+│   ├── example.xml
+│   ├── iou.jpg
+│   ├── lazy_loading.png
+│   └── result.png
+├── demo
+│   ├── image_demo.py
 │   ├── inputs
 │   │   ├── images
 │   │   │   ├── sample_image_0.jpg
@@ -45,16 +52,21 @@ In this project, we need some external libraries such as OpenCV, Pytorch,... (ve
 │   │       ├── sample_video_0.mp4
 │   │       ├── sample_video_1.mp4
 │   │       └── sample_video_2.mp4
-│   ├── image_demo.py
 │   └── video_demo.py
-├── assets
-│   ├── example.jpg
-│   ├── example.xml
-│   └── lazy_loading.png
+├── Dockerfile
+├── gradio_app
+│   ├── app.py
+│   └── utils
+│       ├── image_processing.py
+│       ├── __init__.py
+│       └── model_utils.py
 ├── large_file_parts
 │   ├── license-plate-project.zip.part1
-│   ├── license-plate-project.zip.part2
-│   ├── license-plate-project.zip.part3
+│   ├── license-plate-project.zip.part10
+│   ├── license-plate-project.zip.part11
+│   ├── license-plate-project.zip.part12
+│   ├── license-plate-project.zip.part13
+│   ├── license-plate-project.zip.part14
 │   └── ...
 ├── models
 │   ├── checkpoints
@@ -65,8 +77,11 @@ In this project, we need some external libraries such as OpenCV, Pytorch,... (ve
 │   ├── experiments.ipynb
 │   ├── exploration.ipynb
 │   └── preprocessing.ipynb
+├── packages.txt
 ├── README.md
+├── requirements.dev.txt
 ├── requirements.txt
+├── runtime.txt
 ├── src
 │   ├── callbacks.py
 │   ├── config.py
@@ -79,6 +94,14 @@ In this project, we need some external libraries such as OpenCV, Pytorch,... (ve
 │   ├── train.py
 │   ├── utils.py
 │   └── visualization.py
+├── streamlit_app
+│   ├── Home.py
+│   ├── pages
+│   │   └── Image_Recognition.py
+│   └── utils
+│       ├── image_processing.py
+│       ├── __init__.py
+│       └── model_utils.py
 └── tests
     ├── test_data_preprocessing.py
     ├── test_dataset.py
@@ -101,7 +124,10 @@ Our project directory has a tree structure as below:
   - The `experiments.ipynb` file is used to synthesize the above 2 files and proceed to train the model.
 - The `src` folder, this is the most important folder, this is the folder containing all the modules customized to serve this project, specifically the Dataset subclass, data visualization, model, ...
 - The `tests` folder contains python files used to test whether the functions in the `src` folder are working properly or not by performing tests using the **unitttest** library
-- The `requirements.txt` file is the folder containing all the information about the libraries used in this project
+- The `requirements.dev.txt` file is the folder containing all the information about the libraries for development used in this project
+- The `requirements.txt` file is the folder containing all the information about the libraries for production used in this project
+- The `gradio_app` is Gradio web application interface
+- The `streamlit_app` is Streamlit web application interface
 
 --------------------
 
