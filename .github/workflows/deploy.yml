@@ -20,6 +20,12 @@ jobs:
             
             - name: Push image to Docker Hub
               run: docker push ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
+            
+            - name: Clean builder cache
+              run: docker builder prune -f
+
+            - name: Logout Docker 
+              run: docker logout
 
     pull-and-run-container-on-vps:
         name: Connect VPS, pull image from Docker Hub and run container from previous actions
@@ -41,7 +47,9 @@ jobs:
                 ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
                   # Download model checkpoint
                   mkdir -p $HOME/services/public/vehicle-plate-detection-system
-                  curl -L "https://github.com/lngquoctrung/vehicle-license-plate-recognition/releases/download/v1.0.0/best_faster_rcnn_checkpoints.pt" -o "$HOME/services/public/vehicle-plate-detection-system/faster_rcnn_checkpoint.pth"
+                  if [ ! -e "$HOME/services/public/vehicle-plate-detection-system/faster_rcnn_checkpoint.pt" ]; then 
+                    curl -L "https://github.com/lngquoctrung/vehicle-license-plate-recognition/releases/download/v1.0.0/best_faster_rcnn_checkpoints.pt" -o "$HOME/services/public/vehicle-plate-detection-system/faster_rcnn_checkpoint.pt"
+                  fi
 
                   # Login in Docker Hub
                   docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -58,7 +66,4 @@ jobs:
 
                   # Run container
                   docker run -d --name vehicle-plate-detection-system -v $HOME/services/public/vehicle-plate-detection-system:/app/model -p 7001:7001 ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
-
-                  # Clean builder cache
-                  docker builder prune -f
                 EOF
