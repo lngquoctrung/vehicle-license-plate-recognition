@@ -3,8 +3,7 @@ import numpy as np
 import torch
 
 NUM_WORKERS = os.cpu_count()
-
-DATA_URL = "https://raw.githubusercontent.com/lngquoctrung/vehicle-license-plate-recognition/refs/heads/main/large_file_parts"
+DATA_URL = "https://github.com/lngquoctrung/vehicle-license-plate-recognition/releases/download/v1.0.0"
 DATA_DIR = "data"
 RAW_DATA_DIR = os.path.join(DATA_DIR, "raw")
 PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")

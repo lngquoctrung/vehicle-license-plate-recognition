@@ -11,6 +11,3 @@ notebooks/data/
 # Cache and temp files
 .ipynb_checkpoints/
 **/__pycache__/
-
-# Skip saved model to deploy on streamlit
-!models/final/best_faster_rcnn_checkpoints.pt
