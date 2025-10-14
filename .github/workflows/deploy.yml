@@ -1,69 +1,87 @@
-name: Deploy 
+name: Deploy to EC2
 
 on:
     push:
-        branches: [production]
+      branches: 
+          - production
 
 jobs:
-    build-and-push-image:
-        name: Build and push Docker image
+    setup:
+        name: Setup project
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v5
+            -
+                name: Create project folder, download pretrained model and scaler
+                uses: appleboy/ssh-action@master
+                with:
+                    host: ${{ secrets.VPS_HOST }}
+                    username: ${{ secrets.VPS_USERNAME }}
+                    key: ${{ secrets.VPS_PRIVATE_KEY }}
+                    script: |
+                        # Create project folder if not exist
+                        mkdir -p "${{ secrets.PROJECT_PATH }}"
 
-            - name: Login in to Docker Hub
-              run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
-
-            - name: Build image from Dockerfile
-              run: docker build -t ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest .
-            
-            - name: Push image to Docker Hub
-              run: docker push ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
-            
-            - name: Clean builder cache
-              run: docker builder prune -f
-
-            - name: Logout Docker 
-              run: docker logout
-
-    pull-and-run-container-on-vps:
-        name: Connect VPS, pull image from Docker Hub and run container from previous actions
-        needs: build-and-push-image
+                        # Download pretrained model and scaler
+                        if [ ! -e "${{ secrets.PROJECT_PATH }}/faster_rcnn_checkpoint.pt" ]; then 
+                          curl \
+                            -L "https://github.com/lngquoctrung/vehicle-license-plate-recognition/releases/download/v1.0.0/best_faster_rcnn_checkpoints.pt" \
+                            -o "${{ secrets.PROJECT_PATH }}/faster_rcnn_checkpoint.pt"
+                        fi
+    
+    build-and-push:
+        name: Build and push image to Docker Hub
         runs-on: ubuntu-latest
+        needs: setup
         steps:
-            - name: Install SSH
-              run: sudo apt update && sudo apt install -y openssh-client
+            -
+                name: Checkout code
+                uses: actions/checkout@v3
+            -
+                name: Login to Docker Hub
+                uses: docker/login-action@v3
+                with:
+                    username: ${{ secrets.DOCKERHUB_USERNAME }}
+                    password: ${{ secrets.DOCKERHUB_PASSWORD }}
+            -
+                name: Set up QEMU
+                uses: docker/setup-qemu-action@v3
+            -
+                name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v3
+            -
+                name: Build and push
+                uses: docker/build-push-action@v6
+                with:
+                    push: true
+                    tags: ${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest
 
-            - name: Add SSH private key
-              run: |
-                mkdir -p ~/.ssh
-                echo "${{ secrets.VPS_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-                chmod 600 ~/.ssh/id_rsa
-                ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+    deploy:
+        name: Deploy to VPS
+        runs-on: ubuntu-latest
+        needs: build-and-push
+        steps:
+            - 
+                name: Pull image and run container on VPS
+                uses: appleboy/ssh-action@master
+                with:
+                    host: ${{ secrets.VPS_HOST }}
+                    username: ${{ secrets.VPS_USERNAME }}
+                    key: ${{ secrets.VPS_PRIVATE_KEY }}
+                    script: |
+                        # Stop and remove old container
+                        docker stop license-detection-system 2>/dev/null || true
+                        docker rm license-detection-system 2>/dev/null || true
 
-            - name: Connect to VPS, pull and run container
-              run: |
-                ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
-                  # Download model checkpoint
-                  mkdir -p $HOME/services/public/vehicle-plate-detection-system
-                  if [ ! -e "$HOME/services/public/vehicle-plate-detection-system/faster_rcnn_checkpoint.pt" ]; then 
-                    curl -L "https://github.com/lngquoctrung/vehicle-license-plate-recognition/releases/download/v1.0.0/best_faster_rcnn_checkpoints.pt" -o "$HOME/services/public/vehicle-plate-detection-system/faster_rcnn_checkpoint.pt"
-                  fi
+                        # Remove old image
+                        docker rmi "${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest" 2>/dev/null || true
 
-                  # Login in Docker Hub
-                  docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+                        # Pull latest image
+                        docker pull "${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest"
 
-                  # Stop and remove running container
-                  docker stop vehicle-plate-detection-system || true
-                  docker rm vehicle-plate-detection-system || true
-
-                  # Remove existed image
-                  docker rmi ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest || true
-
-                  # Pull image from Docker Hub
-                  docker pull ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
-
-                  # Run container
-                  docker run -d --name vehicle-plate-detection-system -v $HOME/services/public/vehicle-plate-detection-system:/app/model -p 7001:7001 ${{ secrets.DOCKER_USERNAME }}/vehicle-plate-detection:latest
-                EOF
+                        docker run \
+                            -d \
+                            --name license-detection-system \
+                            -v "${{ secrets.PROJECT_PATH }}:/app/model" \
+                            -p 7001:7001 \
+                            --restart unless-stopped \
+                            ${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest
