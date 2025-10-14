@@ -53,7 +53,7 @@ jobs:
                 uses: docker/build-push-action@v6
                 with:
                     push: true
-                    tags: ${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest
+                    tags: ${{ secrets.DOCKERHUB_USERNAME }}/license-plate-detection-system:latest
 
     deploy:
         name: Deploy to VPS
@@ -69,19 +69,19 @@ jobs:
                     key: ${{ secrets.VPS_PRIVATE_KEY }}
                     script: |
                         # Stop and remove old container
-                        docker stop license-detection-system 2>/dev/null || true
-                        docker rm license-detection-system 2>/dev/null || true
+                        docker stop license-plate-detection-system 2>/dev/null || true
+                        docker rm license-plate-detection-system 2>/dev/null || true
 
                         # Remove old image
-                        docker rmi "${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest" 2>/dev/null || true
+                        docker rmi "${{ secrets.DOCKERHUB_USERNAME }}/license-plate-detection-system:latest" 2>/dev/null || true
 
                         # Pull latest image
-                        docker pull "${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest"
+                        docker pull "${{ secrets.DOCKERHUB_USERNAME }}/license-plate-detection-system:latest"
 
                         docker run \
                             -d \
-                            --name license-detection-system \
+                            --name license-plate-detection-system \
                             -v "${{ secrets.PROJECT_PATH }}:/app/model" \
                             -p 7001:7001 \
                             --restart unless-stopped \
-                            ${{ secrets.DOCKERHUB_USERNAME }}/license-detection-system:latest
+                            ${{ secrets.DOCKERHUB_USERNAME }}/license-plate-detection-system:latest
