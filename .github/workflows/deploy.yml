@@ -82,6 +82,6 @@ jobs:
                             -d \
                             --name license-plate-detection-system \
                             -v "${{ secrets.PROJECT_PATH }}:/app/model" \
-                            -p 7001:7001 \
+                            -p 127.0.0.1:${{ secrets.APP_PORT }}:${{ secrets.APP_PORT }} \
                             --restart unless-stopped \
                             ${{ secrets.DOCKERHUB_USERNAME }}/license-plate-detection-system:latest
