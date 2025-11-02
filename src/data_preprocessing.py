@@ -6,15 +6,12 @@ import cv2
 from lxml import etree
 from tqdm import tqdm
 
-from .utils import create_directory
-from .config import DATA_URL
-
-def download_dataset(dest="data/raw"):
+def download_dataset(url, dest="data/raw"):
     """
         Download dataset from the cloud
     """
     # Create folder data to store dataset if it does not exist
-    create_directory(dest)
+    os.makedirs(dest, exist_ok=True)
 
     # File name and destination path where file is stored
     zip_file_name = "license-plate-project.zip"
@@ -22,58 +19,61 @@ def download_dataset(dest="data/raw"):
 
     # Download dataset if data folder is empty
     if not "train" in os.listdir(dest):
-        print('Dataset does not exist, please waiting to download data from the cloud...')
+        print("Dataset does not exist, please waiting to download data from the cloud...")
         
         # Fetch parts of dataset file
-        responses = []
-        total_size = 0
         num_parts = 20
+        print(">>> Start to download...")
 
-        print('Start to download...')
-        for i in range(num_parts):
-            url = f"{DATA_URL}/license-plate-project.zip.part{i + 1}"
-            try:
-                response = requests.get(url, stream=True, timeout=(10, 30))
-                total_size += int(response.headers.get('Content-Length', 0))
-                if i % 5 == 0:
-                    print(f"{i}/{num_parts} of data are downloaded")
-                responses.append(response)
-            except Exception as e:
-                print(e)
+        # Write data to file
+        with open(zip_file_path, "wb") as file:
+            for i in range(num_parts):
+                part_url = f"{url}/license-plate-project.zip.part{i + 1}"
+                try:
+                    print(f">>> Downloading part {i+1}/{num_parts}...")
+                    response = requests.get(part_url, stream=True, timeout=(10, 30))
+                    response.raise_for_status()
 
-        # Display progress when download file
-        with open(zip_file_path, 'wb') as file, tqdm(
-            desc=zip_file_name,
-            total=total_size,
-            unit='B',
-            unit_scale=True,
-            unit_divisor=1024,
-            leave=True,
-            position=0,
-        ) as progress_bar:
-            for response in responses:
-                for content in response.iter_content(chunk_size=1024):
-                    size = file.write(content)
-                    progress_bar.update(size)
+                    # Get total size of file parts
+                    total_size = int(response.headers.get("content-length", 0))
 
-        # Extract zip file
-        print('Downloaded, please waiting to extract file...')
-        print('Extracting...')
-        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-            zip_ref.extractall(dest)
-            print('Extracted!!')
-        print('Removing zip file...')
-        os.remove(zip_file_path)
-        print('Removed!!')
+                    # Display progress bar
+                    with tqdm(
+                        total=total_size, 
+                        unit="B", 
+                        unit_scale=True, 
+                        unit_divisor=1024, 
+                        desc=f"Part {i+1}"
+                    ) as pbar:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                file.write(chunk)
+                                pbar.update(len(chunk))
+                    print(f">>> Part {i+1} downloaded successfully")
+                except Exception as e:
+                    print(f"Error downloading part {i+1}: {e}")
+                    raise
+
+        print(f">>> Downloaded successfully! File size: {os.path.getsize(zip_file_path)} bytes")
         
+        # Extract zip file
+        print(">>> Extracting...")
+        with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+            zip_ref.extractall(dest)
+        print(">>> Extracted!!")
+
+        # Remove zip file
+        print(">>> Removing zip file...")
+        os.remove(zip_file_path)
+        print("Removed!!")
+
         # Remove unnecessary files
         dirs = os.listdir(dest)
         for dir in dirs:
             dir_path = os.path.join(dest, dir)
             if os.path.isfile(dir_path):
                 os.remove(dir_path)
-
-    print('Done!!')
+        print("Done!!")
 
 def preprocess_data(data_path, dest="data/processed", image_size=(320, 320)):
     """
@@ -156,7 +156,7 @@ def preprocess_data(data_path, dest="data/processed", image_size=(320, 320)):
         dest_dir_path = os.path.join(dest, dir_name)
 
         # Create directory to store processed data
-        create_directory(dest_dir_path)
+        os.makedirs(dest_dir_path, exist_ok=True)
 
         # The image file name and the xml file name are the same
         unique_filenames = set([os.path.splitext(filename)[0] for filename in os.listdir(raw_dir_path)])

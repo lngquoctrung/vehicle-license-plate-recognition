@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import albumentations as A
 
 from pathlib import Path
 from lxml import etree
@@ -9,9 +10,20 @@ import torch
 from torch.utils import data
 
 class LicensePlateDataset(data.Dataset):
-    def __init__(self, file_paths, transform=None):
+    def __init__(self, file_paths, transform=None, augment=False):
         self.transform = transform
         self.data = []
+        self.augment = augment
+        self.augmentation = A.Compose([
+            A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
+            A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=20, val_shift_limit=10, p=0.3),
+            A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
+            A.MotionBlur(blur_limit=3, p=0.2),
+            A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.3, alpha_coef=0.08, p=0.1),
+            A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=10, p=0.1),
+            A.RandomScale(scale_limit=0.2, p=0.3),  # Scale to simulate far/near camera
+            A.Rotate(limit=5, p=0.3),
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['labels']))
 
         # Extract data from XML files
         xml_file_paths = [file_path for file_path in file_paths if file_path.endswith(".xml")]
@@ -88,6 +100,11 @@ class LicensePlateDataset(data.Dataset):
             boxes.append([xmin, ymin, xmax, ymax])
             # Assuming all objects are license plates (class 1)
             labels.append(1)
+
+        if self.augment:
+            augmented = self.augmentation(image=image, bboxes=boxes, labels=labels)
+            image = augmented['image']
+            boxes = augmented['bboxes']
 
         boxes = torch.tensor(boxes, dtype=torch.float32)
         labels = torch.tensor(labels, dtype=torch.int64)

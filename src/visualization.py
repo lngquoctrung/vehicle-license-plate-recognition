@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-from .config import MEAN_NORMALIZATION, STD_NORMALIZATION
+from .config import Config
 
 def display_images_and_targets(images, targets):
     """
@@ -13,7 +13,7 @@ def display_images_and_targets(images, targets):
     for i in range(3):
         for j in range(3):
             # Restore image before normalization
-            image = images[k] * STD_NORMALIZATION[:, None, None] + MEAN_NORMALIZATION[:, None, None]
+            image = images[k] * Config.STD_NORMALIZATION[:, None, None] + Config.MEAN_NORMALIZATION[:, None, None]
 
             # Normalize the image values to the range [0, 255] and cast to uint8 type
             image = image.numpy()

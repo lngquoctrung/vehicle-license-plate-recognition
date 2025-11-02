@@ -10,7 +10,7 @@ root_dir = Path(__file__).parent.parent.absolute()
 os.environ["TORCH_HOME"] = str(root_dir / "torch_cache")
 
 class FTFasterRCNN(torch.nn.Module):
-    def __init__(self, num_classes, freeze_backbone=False):
+    def __init__(self, num_classes, freeze_backbone=True):
         super(FTFasterRCNN, self).__init__()
 
         # Load pretrained backbone model
@@ -18,17 +18,21 @@ class FTFasterRCNN(torch.nn.Module):
         # Remove fully connected layer
         backbone = torch.nn.Sequential(*list(backbone.children())[:-3])
         backbone.out_channels = 1024
+
         # Freezee pretrained parameters of backbone model
         for param in backbone.parameters():
             param.requires_grad = not freeze_backbone
 
+        # Unfreeze two final layers to fine-tune
         for param in backbone[-1].parameters():
+            param.requires_grad = True
+        for param in backbone[-2].parameters():
             param.requires_grad = True
 
         # Anchor generator
         ancho_generator = AnchorGenerator(
-            sizes=((16, 32, 64, 128, 256),),
-            aspect_ratios=((0.5, 1.0, 2.0),)
+            sizes=((8, 16, 32, 64, 128),),
+            aspect_ratios=((0.3, 0.5, 1.0, 2.0, 3.0),)
         )
 
         # RoI Pooling

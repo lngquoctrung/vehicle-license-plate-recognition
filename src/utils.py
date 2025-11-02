@@ -1,22 +1,12 @@
 import os
 
-def create_directory(path):
-    """
-        Create directories if it does not exist
-    """
-    # Check the path whether exist or not
-    if not os.path.exists(path):
-        # Create new directories
-        os.makedirs(path)
-
-
 def split_file(file_path, chunk_size_mb=50):
     """
         Split large dataset to small files
     """
     # Create directory to store small files
     dir_path = "large_file_parts"
-    create_directory(dir_path)
+    os.makedirs(dir_path, exist_ok=True)
 
     # Small part size in bytes
     chunk_size = chunk_size_mb * 1024 * 1024

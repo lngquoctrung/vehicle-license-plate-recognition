@@ -1,11 +1,8 @@
 import torch
 import os
 
-from .config import CHECKPOINT_DIR, FINAL_STATE_DIR
-from .utils import create_directory
-
 class EarlyStopping:
-    def __init__(self, patience=10, min_delta=0):
+    def __init__(self, patience=15, min_delta=0):
         self.best_score = None
         self.early_stopping = False
         self.best_model_state = None
@@ -27,22 +24,29 @@ class EarlyStopping:
             self.best_model_state = model.state_dict()
 
 class ModelCheckpoints:
-    def __init__(self, filename, save_best_only=True):
-        self.filename = filename
+    def __init__(self, filepath, save_best_only=False, best_checkpoint_filepath=None):
+        self.filepath = filepath
         self.save_best_only = save_best_only
+        self.best_loss = float("inf")
+        self.best_checkpoint_filepath = best_checkpoint_filepath
 
     def __call__(self, model, val_loss, epoch, optimizer):
         checkpoint = {
-            "epoch": epoch + 1,
+            "epoch": epoch,
             "state_dict": model.state_dict(),
             "best_loss": val_loss,
             "optimizer": optimizer.state_dict(),
         }
-        create_directory(CHECKPOINT_DIR)
-        file_path = os.path.join(CHECKPOINT_DIR, self.filename)
-        torch.save(checkpoint, file_path)
+        # Create a checkpoint directory if it doesn't exist
+        os.makedirs(os.path.dirname(self.filepath), exist_ok=True)
 
-        if self.save_best_only:
-            create_directory(FINAL_STATE_DIR)
-            best_model_file_path = os.path.join(FINAL_STATE_DIR, f"best_{self.filename}")
-            torch.save(checkpoint, best_model_file_path)
+        # Always save the latest checkpoint
+        torch.save(checkpoint, self.filepath)
+        print(f"Latest checkpoint saved at {self.filepath} \n")
+
+        # Save best checkpoint
+        if self.save_best_only and val_loss < self.best_loss and self.best_checkpoint_filepath:
+            os.makedirs(os.path.dirname(self.best_checkpoint_filepath), exist_ok=True)
+            self.best_loss = val_loss
+            torch.save(checkpoint, self.best_checkpoint_filepath)
+            print(f"Best model saved with loss {val_loss:.4f}")
