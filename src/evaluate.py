@@ -1,14 +1,15 @@
 import torch
 
 from .model import FTFasterRCNN
+from .config import Config
 from .metrics import iou_metric
 
-def evaluate_model(config, checkpoint_path, test_dataloader):
+def evaluate_model(checkpoint_path, test_dataloader):
     # Load model
     model = FTFasterRCNN(num_classes=2, freeze_backbone=True)
     checkpoint = torch.load(checkpoint_path, weights_only=True)
     model.load_state_dict(checkpoint["state_dict"])
-    model.to(config.DEVICE)
+    model.to(Config.DEVICE)
 
     model.eval()
     test_images = []
@@ -18,8 +19,8 @@ def evaluate_model(config, checkpoint_path, test_dataloader):
 
     with torch.no_grad():
         for images, targets in test_dataloader:
-            images = [image.to(config.DEVICE) for image in images]
-            targets = [{k: v.to(config.DEVICE) for k, v in target.items()} for target in targets]
+            images = [image.to(Config.DEVICE) for image in images]
+            targets = [{k: v.to(Config.DEVICE) for k, v in target.items()} for target in targets]
 
             # Predict test images
             predictions = model(images)
@@ -41,7 +42,7 @@ def evaluate_model(config, checkpoint_path, test_dataloader):
             test_targets.extend([{k: v.cpu() for k, v in target.items()} for target in targets])
             test_predictions.extend([{k: v.cpu() for k, v in pred.items()} for pred in predictions])
 
-    corrects = torch.sum(torch.tensor(iou_scores) > config.IOU_THRESHOLD)
+    corrects = torch.sum(torch.tensor(iou_scores) > Config.IOU_THRESHOLD)
     print("Average IoU:", torch.mean(torch.tensor(iou_scores)).item())
     print(f"Predicted: {corrects}/{len(iou_scores)}")
     print("Percentage of predictions with IoU > 0.5:", (corrects / len(iou_scores) * 100).item(), "%")

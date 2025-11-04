@@ -25,3 +25,20 @@ def iou_metric(pred_box, true_box):
     iou = inter_area / (union_area + 1e-6) # Plus epsilon to avoid division by zero
     
     return iou
+
+def accuracy_metric(pred_boxes, true_boxes, iou_threshold=0.5):
+    if len(pred_boxes) == 0:
+        return 0.0
+    
+    correct = 0
+    for pred_box in pred_boxes:
+        best_iou = 0.0
+        for true_box in true_boxes:
+            iou = iou_metric(pred_box, true_box)
+            best_iou = max(best_iou, iou)
+        
+        if best_iou >= iou_threshold:
+            correct += 1
+    
+    accuracy = correct / len(pred_boxes)
+    return accuracy

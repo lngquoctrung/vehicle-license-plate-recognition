@@ -17,8 +17,7 @@ class Config:
     DATA_DIR = str(root_path / "data")
     RAW_DATA_DIR = os.path.join(DATA_DIR, "raw")
     PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")
-    MODEL_DIR = str(root_path / "models")
-    CHECKPOINT_DIR = os.path.join(MODEL_DIR, "checkpoints")
+    CHECKPOINT_DIR = str(root_path / "checkpoints")
 
     # Image configurations
     IMAGE_SIZE = (416, 416)
@@ -31,23 +30,24 @@ class Config:
     SCORE_THRESHOLD = 0.3
 
     # Training configurations
-    BATCH_SIZE = 8
+    BATCH_SIZE = 20
     EPOCHES = 50
-    LEARNING_RATE = 1e-3
-    WEIGHT_DECAY = 1e-4
 
     # Optimizer configurations
     MOMENTUM = 0.9
+    LEARNING_RATE = 1e-3
+    WEIGHT_DECAY = 1e-4
 
     # Learning Rate Scheduler configurations
     STEP_SIZE = 10
-    GAMMA = 0.1
+    GAMMA = 0.3
 
     # Warmup configurations
-    WARMUP_EPOCHS = 5
+    WARMUP_EPOCHS = 10
 
     # Early Stopping configurations
-    EARLY_STOPPING_PATIENCE = 15
+    EARLY_STOPPING_PATIENCE = 10
+    MIN_DELTA = 0
 
     # Data Augmentation configurations
     USE_AUGMENTATION = True
@@ -65,7 +65,6 @@ class Config:
             "data_dir": cls.DATA_DIR,
             "raw_data_dir": cls.RAW_DATA_DIR,
             "processed_data_dir": cls.PROCESSED_DATA_DIR,
-            "model_dir": cls.MODEL_DIR,
             "checkpoint_dir": cls.CHECKPOINT_DIR,
             "image_size": cls.IMAGE_SIZE,
             "mean_normalization": cls.MEAN_NORMALIZATION,

@@ -30,12 +30,13 @@ class ModelCheckpoints:
         self.best_loss = float("inf")
         self.best_checkpoint_filepath = best_checkpoint_filepath
 
-    def __call__(self, model, val_loss, epoch, optimizer):
+    def __call__(self, model, val_loss, epoch, optimizer, history):
         checkpoint = {
             "epoch": epoch,
             "state_dict": model.state_dict(),
             "best_loss": val_loss,
-            "optimizer": optimizer.state_dict(),
+            "optimizer": optimizer.state_dict(), 
+            "history": history
         }
         # Create a checkpoint directory if it doesn't exist
         os.makedirs(os.path.dirname(self.filepath), exist_ok=True)

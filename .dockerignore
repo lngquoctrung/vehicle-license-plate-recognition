@@ -29,3 +29,6 @@ runtime.txt
 
 # Development requirements
 requirements.dev.txt
+license-plate-recognition-project.ipynb
+license-plate-recognition-project.pdf
+license-plate-recognition-resource.zip

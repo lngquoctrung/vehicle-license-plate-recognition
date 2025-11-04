@@ -11,3 +11,7 @@ notebooks/data/
 # Cache and temp files
 .ipynb_checkpoints/
 **/__pycache__/
+
+license-plate-recognition-project.ipynb
+license-plate-recognition-project.pdf
+license-plate-recognition-resource.zip

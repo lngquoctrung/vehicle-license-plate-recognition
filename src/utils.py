@@ -1,4 +1,6 @@
 import os
+import pickle
+from pathlib import Path
 
 def split_file(file_path, chunk_size_mb=50):
     """

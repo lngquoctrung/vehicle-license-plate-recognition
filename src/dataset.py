@@ -1,34 +1,23 @@
-import numpy as np
 import cv2
 import albumentations as A
 
 from pathlib import Path
 from lxml import etree
-from PIL import Image
 import torch
 
 from torch.utils import data
 
 class LicensePlateDataset(data.Dataset):
-    def __init__(self, file_paths, transform=None, augment=False):
-        self.transform = transform
+    def __init__(self, file_paths, transforms=None):
+        self.transforms = transforms
         self.data = []
-        self.augment = augment
-        self.augmentation = A.Compose([
-            A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
-            A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=20, val_shift_limit=10, p=0.3),
-            A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
-            A.MotionBlur(blur_limit=3, p=0.2),
-            A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.3, alpha_coef=0.08, p=0.1),
-            A.RandomRain(slant_lower=-10, slant_upper=10, drop_length=10, p=0.1),
-            A.RandomScale(scale_limit=0.2, p=0.3),  # Scale to simulate far/near camera
-            A.Rotate(limit=5, p=0.3),
-        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['labels']))
 
         # Extract data from XML files
         xml_file_paths = [file_path for file_path in file_paths if file_path.endswith(".xml")]
         for xml_file_path in xml_file_paths:
-            self.data.append(self.__parse_xml(xml_file_path))
+            data_item = self.__parse_xml(xml_file_path)
+            if len(data_item["objects"]) > 0:
+                self.data.append(data_item)
 
     def __parse_xml(self, xml_file_path):
         # The path of image file
@@ -73,45 +62,48 @@ class LicensePlateDataset(data.Dataset):
 
     def __getitem__(self, idx):
         # Load image and get bounding box of this image
-        image = cv2.imread(self.data[idx]["image_file_path"])
+        image = cv2.imread(str(self.data[idx]["image_file_path"]))
         # Convert from BGR image to RGB image
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # Convert from numpy image to PIL image
-        image = Image.fromarray(image)
-        if self.transform:
-            # Apply transformation
-            image = self.transform(image)
 
-        # Orignal width and height of image
-        original_height, original_width = self.data[idx]["height"], self.data[idx]["width"]
-        # Normalization label
-        _, resized_height, resized_width = image.shape
+        # Get bounding boxes and labels
+        boxes = [obj["bbox"] for obj in self.data[idx]["objects"]]
+        labels = [1 for _ in self.data[idx]["objects"]]  # All license plates
 
-        boxes = []
-        labels = []
-        for object in self.data[idx]["objects"]:
-            box = object["bbox"]
-            # Resize bounding box if image has been resized
-            xmin = box[0] * (resized_width / original_width)
-            ymin = box[1] * (resized_height / original_height)
-            xmax = box[2] * (resized_width / original_width)
-            ymax = box[3] * (resized_height / original_height)
+        # Get image dimensions
+        height, width = image.shape[:2]
 
-            boxes.append([xmin, ymin, xmax, ymax])
-            # Assuming all objects are license plates (class 1)
-            labels.append(1)
+        normalized_boxes = []
+        for bbox in boxes:
+            xmin, ymin, xmax, ymax = bbox
+            # Normalize bounding box
+            norm_bbox = [
+                xmin / width,
+                ymin / height,
+                xmax / width,
+                ymax / height
+            ]
+            norm_bbox = [
+                max(0.0, min(1.0, coord)) for coord in norm_bbox
+            ]
+            normalized_boxes.append(norm_bbox)
+        
+        if self.transforms:
+            transformed = self.transforms(image=image, bboxes=normalized_boxes, labels=labels)
+            image = transformed['image']
+            boxes = transformed['bboxes']
+            labels = transformed['labels']
+        else:
+            boxes = normalized_boxes
 
-        if self.augment:
-            augmented = self.augmentation(image=image, bboxes=boxes, labels=labels)
-            image = augmented['image']
-            boxes = augmented['bboxes']
-
+        if len(boxes) == 0:
+            return self.__getitem__((idx + 1) % len(self.data))
+        
+        # Convert to tensor
+        if not isinstance(image, torch.Tensor):
+            image = torch.from_numpy(image).permute(2, 0, 1).float()
+        
         boxes = torch.tensor(boxes, dtype=torch.float32)
         labels = torch.tensor(labels, dtype=torch.int64)
-        # The label
-        target = {
-            "boxes": boxes,
-            "labels": labels
-        }
-
-        return image, target
+        
+        return image, {"boxes": boxes, "labels": labels}
